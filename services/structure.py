@@ -162,18 +162,38 @@ def place_atom(
     )
 
 
-def structure_angles(state):
-    if state == "H":
-        return -57.0, -47.0
+# def structure_angles(state):
+#     if state == "H":
+#         return -57.0, -47.0
+#
+#     if state == "E":
+#         return -135.0, 135.0
+#
+#     if state == "T":
+#         return -60.0, 30.0
+#
+#     return -90.0, 60.0
 
-    if state == "E":
-        return -135.0, 135.0
+AA_ORDER = "ACDEFGHIKLMNPQRSTVWY"
 
-    if state == "T":
-        return -60.0, 30.0
+def structure_angles(state, aa=None):
+    base = {
+        "H": (-57.0, -47.0),
+        "E": (-135.0, 135.0),
+        "T": (-60.0, 30.0),
+    }.get(state, (-90.0, 60.0))
 
-    return -90.0, 60.0
+    if aa is None or aa not in AA_ORDER:
+        return base
 
+    # Small deterministic per-residue jitter so identical
+    # secondary-structure strings don't collapse to identical
+    # geometry when the sequence differs. Still stays within
+    # a realistic range for each SS class.
+    # jitter = (AA_ORDER.index(aa) % 7) - 3  # -3..+3 degrees
+    jitter = ((AA_ORDER.index(aa) % 7) - 3) * 7
+    phi, psi = base
+    return phi + jitter, psi - jitter
 
 def atom_line(
     serial,
@@ -343,7 +363,7 @@ def generate_chain_atoms(
         state = structure[i]
 
         phi, psi = structure_angles(
-            state
+            state, sequence[i]
         )
 
         current_n = place_atom(

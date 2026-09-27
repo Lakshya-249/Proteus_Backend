@@ -198,6 +198,7 @@ async def get_or_create_insights(
         )
 
     # 3. Generate using multi-model provider router
+    exception = True
     try:
         fresh_insights = await service.analyze_protein(
             pdb_id=pdb_id,
@@ -206,6 +207,7 @@ async def get_or_create_insights(
         )
 
     except Exception:
+        exception = False
         print(
             "All AI providers failed for PDB %s chain %s",
             pdb_id,
@@ -218,11 +220,12 @@ async def get_or_create_insights(
         )
 
     # 4. Cache successful result
-    upsert_insights(
-        pdb_id=pdb_id,
-        chain_id=chain_id,
-        sequence=request.sequence,
-        insights=fresh_insights,
-    )
+    if(exception):
+        upsert_insights(
+            pdb_id=pdb_id,
+            chain_id=chain_id,
+            sequence=request.sequence,
+            insights=fresh_insights,
+        )
 
     return fresh_insights

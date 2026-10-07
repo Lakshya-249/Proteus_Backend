@@ -6,7 +6,7 @@ services:
       context: ./
       dockerfile: Dockerfile
     container_name: proteus_api
-    restart: always
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
@@ -17,7 +17,7 @@ services:
   mongodb:
     image: mongo:latest
     container_name: mongodb-proteus
-    restart: always
+    restart: unless-stopped
     ports:
       - "27017:27017"
     environment:

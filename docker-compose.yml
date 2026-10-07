@@ -8,7 +8,7 @@ services:
     container_name: proteus_api
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8000:8001"
     environment:
       - MONGO_URI=mongodb://root:password@mongodb:27017/proteus_db?authSource=admin
     depends_on:

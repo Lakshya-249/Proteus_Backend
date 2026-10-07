@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from pymongo import MongoClient, ASCENDING
 from pymongo.collection import Collection
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://admin:password@localhost:27017/")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://root:password@localhost:27017/")
 client = MongoClient(MONGO_URI)
 db = client["protein_insights_db"]
 insights_collection: Collection = db["insights"]

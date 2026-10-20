@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 from traceback import print_stack
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, UploadFile, File, Form
 from pydantic import BaseModel
 from typing_extensions import Optional
 
@@ -17,6 +17,7 @@ from services.structure import (
     ComplexDesignRequest,
     generate_complex_pdb,
 )
+from pathlib import Path
 
 
 router = APIRouter(prefix="/api")
@@ -26,6 +27,73 @@ class DSSPRequest(BaseModel):
     pdb_id: str
     chain_id: str
 
+
+@router.post("/analysis/dssp/file")
+def run_dssp_file(
+    file: UploadFile = File(...),
+    chain_id: str = Form(...),
+):
+    filename = Path(file.filename or "").name
+
+    if not filename.lower().endswith(".pdb"):
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a .pdb file.",
+        )
+
+    pdb_data = file.file.read()
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        pdb_file = tmp_path / "input.pdb"
+        dssp_file = tmp_path / "output.dssp"
+
+        pdb_file.write_bytes(pdb_data)
+
+        try:
+            subprocess.run(
+                [
+                    "mkdssp",
+                    "--output-format=dssp",
+                    str(pdb_file),
+                    str(dssp_file),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+
+        except FileNotFoundError:
+            raise HTTPException(
+                status_code=500,
+                detail="mkdssp is not installed on the server.",
+            )
+
+        except subprocess.TimeoutExpired:
+            raise HTTPException(
+                status_code=504,
+                detail="DSSP processing timed out.",
+            )
+
+        except subprocess.CalledProcessError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail=exc.stderr or "DSSP failed.",
+            )
+
+        residues = parse_dssp(
+            dssp_file.read_text(),
+            chain_id,
+        )
+
+    return {
+        "method": "DSSP",
+        "filename": filename,
+        "chain_id": chain_id,
+        "residues": residues,
+    }
 
 @router.post("/analysis/dssp")
 def run_dssp(request: DSSPRequest):

@@ -19,6 +19,7 @@ RUN mkdir -p /usr/share/libcifpp /var/cache/libcifpp && \
     curl -fsSL -o /usr/share/libcifpp/mmcif_ma.dic https://github.com/ihmwg/ModelCIF/raw/master/dist/mmcif_ma.dic && \
     cp /usr/share/libcifpp/* /var/cache/libcifpp/
 
+# NOTE: the ModelCIF dictionary below is fetched from `master`; pin it to a commit for reproducible builds.
 # 3. Ensure mkdssp is on PATH
 RUN which mkdssp || ln -s $(which dssp) /usr/local/bin/mkdssp
 
@@ -29,6 +30,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Run as an unprivileged user
+RUN useradd --create-home --uid 10001 app && chown -R app /app
+USER app
+
 EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD curl -fsS http://localhost:8000/api/health || exit 1
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

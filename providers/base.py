@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from ..schemas import DetailedAIInsights
+from schemas import DetailedAIInsights
 
 
 class AIProvider(ABC):

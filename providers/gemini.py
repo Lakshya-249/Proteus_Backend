@@ -24,15 +24,15 @@ class GeminiProvider:
         prompt = f"PDB ID: {pdb_id.upper()}\nChain: {chain_id}\nSequence:\n{sequence}"
 
         try:
-            response = self.client.models.generate_content(
-                model="gemini-2.5-flash",
+            response = await self.client.aio.models.generate_content(
+                model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
                     response_mime_type="application/json",
                     response_schema=DetailedAIInsights,
                     temperature=0.2,
-                    max_output_tokens=4096,
+                    max_output_tokens=8192,
                     automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
                 ),
             )

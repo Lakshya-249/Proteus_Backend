@@ -47,7 +47,7 @@ class GroqProvider:
 
         try:
             response = await self.client.chat.completions.create(
-                model="openai/gpt-oss-20b",
+                model=os.getenv("GROQ_MODEL", "openai/gpt-oss-20b"),
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": prompt},

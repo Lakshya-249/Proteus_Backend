@@ -25,7 +25,7 @@ class OpenRouterProvider:
 
         try:
             response = await self.client.chat.completions.create(
-                model="openrouter/free",
+                model=os.getenv("OPENROUTER_MODEL", "openrouter/free"),
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": prompt},

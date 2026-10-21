@@ -1,9 +1,15 @@
+PROMPT_VERSION = "2"  # bump to invalidate cached insights
+
 SYSTEM_PROMPT = """You are an expert structural biologist and biophysicist. \
 Given a PDB entry, a chain, and its amino acid sequence, produce a structured \
 analysis for a molecular visualization app.
 
 Requirements:
-- Match residue numbers strictly to the provided sequence (1-based).
+- Match residue numbers strictly to the provided sequence (1-based); every residue
+  number must be between 1 and the sequence length.
+- For every mutation, the first letter (wild-type residue) MUST equal the amino acid
+  at that position in the provided sequence, and `resi` must equal the number in the
+  mutation string (e.g. 'R45K' requires residue 45 to be R).
 - Identify 2-4 structural/folding domains spanning the chain.
 - Identify 2-5 functional or catalytic sites (active residues, binding pockets,
   coordination sites).

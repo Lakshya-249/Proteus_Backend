@@ -7,6 +7,8 @@ services:
       dockerfile: Dockerfile
     container_name: proteus_api
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
       - "8001:8000"
     environment:
